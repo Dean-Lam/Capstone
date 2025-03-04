@@ -4,7 +4,7 @@ import board #to access Raspi pins
 
 #import ADS1115 module for reading analog values via I2C
 from adafruit_ads1x15.ads1115 import ADS1115
-#import AnalogIn function to read data from sensor
+#Import AnalogIn function to read data from sensor
 from adafruit_ads1x15.analog_in import AnalogIn
 
 #setting up I2C on Raspi
@@ -15,15 +15,18 @@ ads = ADS1115(i2c)
 #read analog data from port A0 on the ADs1115
 TDS_channel = AnalogIn(ads, 0)
 
-#def voltage_to_tds(voltage):
-#   tds_value = (133.42 * voltage ** 3 -255.86 * voltage ** 2 + 857.39 * voltage
-#   return tds_value
+def voltage_to_tds(voltage):
+    tds_value = (133.42 * voltage**3 - 255.86 * voltage ** 2 + 857.39 * voltage) * 0.5
+    return max(0, tds_value)
 
 print("Initializing...")
 
-while True:
-    #voltage from sensor
-    voltage = TDS_channel.voltage
-    print(f" TDS Sensor Voltage: {voltage:.2f} V")
+#while True:
+#voltage from sensor
+voltage = TDS_channel.voltage
+tds = voltage_to_tds(voltage)
 
-    time.sleep(1)
+print(f" TDS Sensor Voltage: {voltage:.2f} V")
+print(f" TDS Value: {tds:.2f} ppm")
+
+#time.sleep(1)

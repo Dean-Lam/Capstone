@@ -1,0 +1,30 @@
+import time
+import busio
+import board
+from adafruit_ads1x15.ads1115 import ADS1115
+from adafruit_ads1x15.analog_in import AnalogIn
+
+# Setting up I2C on Raspberry Pi
+i2c = busio.I2C(board.SCL, board.SDA)
+
+# Instance of ADS1115 Analog-to-Digital Converter
+ads = ADS1115(i2c)
+
+# Read analog data from port A0 on the ADS1115
+ph_channel = AnalogIn(ads, 0)
+
+# Function to convert voltage to pH
+def voltage_to_ph(voltage):
+    return (voltage - 0.9339) / 0.139  # Use your linear equation
+
+print("Initializing...")
+
+while True:
+    # Read voltage from pH sensor
+    voltage = ph_channel.voltage
+    ph_value = voltage_to_ph(voltage)  # Convert to pH
+
+    # Print voltage and pH value
+    print(f"pH Sensor Voltage: {voltage:.2f} V | pH Value: {ph_value:.2f}")
+
+    time.sleep(1)  # Wait 1 second before next reading

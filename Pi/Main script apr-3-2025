@@ -1,0 +1,64 @@
+import time
+import busio  # import busio for I2C communication
+import board  # to access Raspi pins
+
+#import ADS1115 module for reading analog values via I2C
+from adafruit_ads1x15.ads1115 import ADS1115
+
+class ADS:
+    P0 = 0
+    P1 = 1
+    P2 = 2
+    P3 = 3
+
+#Import AnalogIn function to read data from sensor
+from adafruit_ads1x15.analog_in import AnalogIn
+
+#setting up I2c on Raspi
+i2c = busio.I2C(board.SCL, board.SDA)
+#instance of ADS1115 analog to digital converter
+ads = ADS1115(i2c)
+
+#read analog data from port A0 on the ADs1115
+ph_channel = AnalogIn(ads, ADS.P0)
+moisture_sensor = AnalogIn(ads, ADS.P1)
+TDS_channel = AnalogIn(ads, ADS.P2)
+
+#PH SENSOR ---------------------------------------------------------------
+#converting voltage to pH
+def voltage_to_ph(voltage):
+    return (voltage - 0.9339) / 0.139
+
+#MOISTURE ---------------------------------------------------------------
+#converting voltage to moisture
+def voltage_to_moisture(voltage):
+    DRY_VOLTAGE = 3.0
+    WET_VOLTAGE = 1.0
+
+    moisture_per = (DRY_VOLTAGE - voltage) / (DRY_VOLTAGE - WET_VOLTAGE) * 100
+    moisture_per = max(0, min(100, moisture_per))
+    return moisture_per
+
+#TDS SENSOR -------------------------------------------------------------
+def voltage_to_tds(voltage):
+    tds_value = (133.42 * voltage**3 - 255.86 * voltage ** 2 + 857.39 * voltage) * 0.5
+    return max(0, tds_value)
+
+#PRINTING RESULTS -------------------------------------------------------
+print("Initializing...")
+
+#while True:
+#voltage from sensor
+
+voltage = moisture_sensor.voltage
+moisture = voltage_to_moisture(voltage)
+
+voltage = ph_channel.voltage
+ph_value = voltage_to_ph(voltage)
+
+voltage = TDS_channel.voltage
+tds = voltage_to_tds(voltage)
+
+print(f" pH Sensor Voltage: {voltage:.2f} V | pH Value: {ph_value:.2f}")
+print(f" TDS Sensor Voltage: {voltage:.2f} V | TDS Value: {tds:.2f} ppm")
+print(f" Moisture Sensor Voltage: {voltage:.2f} V | Soil Moisture Level: {moisture:.2f} ")
